@@ -146,15 +146,8 @@ public class ReadingService implements IReadingService {
 		Random random = new Random();
 		double readingValue = 0.0;
 
-		if (random.nextDouble() < 0.2) {
-			readingValue = criticalValue + random.nextDouble() * (criticalValue * 0.2);
-		}
+			    readingValue = normalValue + random.nextDouble() * (criticalValue + 15 - normalValue);
 
-		else if (random.nextDouble() < 0.4) {
-			readingValue = normalValue * 0.5 + random.nextDouble() * (normalValue * 0.4);
-		} else {
-			readingValue = random.nextDouble() * normalValue;
-		}
 
 		return readingValue;
 	}
