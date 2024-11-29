@@ -18,6 +18,7 @@ import com.entrega_tech.Model.Sensor;
 import com.entrega_tech.Model.SensorDTO;
 import com.entrega_tech.Model.SensorPlant;
 import com.entrega_tech.Repository.IAlertRepository;
+import com.entrega_tech.Repository.IReadingRepository;
 import com.entrega_tech.Repository.ISensorPlantRepository;
 import com.entrega_tech.Repository.ISensorRepository;
 
@@ -39,70 +40,70 @@ public class AlertService implements IAlertService{
 	ISensorPlantRepository sensorPlantRepo;
 	@Autowired
 	ISensorRepository sensorRepo;
-
+@Autowired	
+IReadingRepository readingRepo;
 	@Override
 	@Transactional
-	public void crearAlerta() {
+	public void crearAlerta(Reading read) {
 
 		
 		
 		List<SensorPlant> listSensorPlant = (List<SensorPlant>) sensorPlantRepo.findAll();
 		for (SensorPlant s : listSensorPlant) {
 			Sensor sensor = s.getSensor();
-			List<Reading> readings = s.getReading();
-			if(readings == null) break;
+			/*List<Reading> readings = s.getReading();
+			if(readings == null) break;*/
 			
 
-			for (Reading reading : readings) {
-				Double readingValue = reading.getReading_value();
-				
-		        if (s.isStatus() && 
-		                (
-		                 "ROJA".equals(reading.getStatus()) || 
-		                 "MEDIA".equals(reading.getStatus()))) {
-		                continue; 
-		            }
+			//for (Reading reading : readings) {
+				Double readingValue = read.getReading_value();
+			    
 				
 				if (s.isStatus()) {
-					Alert alert = new Alert();
-
-				if (readingValue >= sensor.getCritical_value() && s.isStatus()) {
-					if(alertExist(s,"ROJA") >3)continue;
-					alert.setAlert_at(LocalDateTime.now());
-					alert.setAlert_status("ENVIADA");
-					alert.setAlert_type("ROJA");
-					reading.setStatus("ROJA");
-					alert.setSensor(s);
-					alertRepo.save(alert);
-				} else if (readingValue >= sensor.getNormal_value() * 0.5
-						&& readingValue < sensor.getNormal_value() * 0.9 && s.isStatus()) {
-					if(alertExist(s,"MEDIA") >3)continue;
-					alert.setAlert_at(LocalDateTime.now());
-					alert.setAlert_status("ENVIADA");
-					alert.setAlert_type("MEDIA");
-					reading.setStatus("MEDIA");
-
-					alert.setSensor(s);
-					alertRepo.save(alert);
-				} else if (readingValue >= sensor.getNormal_value() * 0.9 && readingValue < sensor.getNormal_value()) { 
-					reading.setStatus("NORMAL");
-
-				}else if (readingValue > sensor.getNormal_value() && readingValue < sensor.getCritical_value() && s.isStatus()) {
-				    if (alertExist(s, "MEDIA") > 3) continue;
-				    alert.setAlert_at(LocalDateTime.now());
-				    alert.setAlert_status("ENVIADA");
-				    alert.setAlert_type("MEDIA");
-				    reading.setStatus("MEDIA");
-				    alert.setSensor(s);
-				    alertRepo.save(alert);
+				    
+				    double min_value = sensor.getNormal_value();
+				    double max_value = sensor.getCritical_value();
+				    
+				    double rangoNormalSuperior = min_value + (max_value - min_value) * 0.5;
+				    double rangoMediaSuperior = min_value + (max_value - min_value) * 0.75;
+				    /*System.out.println("Valor de Normal: " + min_value);
+				    System.out.println("Valor Crítico: " + max_value);
+				    System.out.println("Rango Normal Superior: " + rangoNormalSuperior);
+				    System.out.println("Rango Media Superior: " + rangoMediaSuperior);
+				    System.out.println("Valor de Lectura Generado: " + readingValue);*/
+				    
+				    if (readingValue > rangoMediaSuperior) {
+				    	read.setStatus("ROJA");
+				        Alert alert = new Alert();
+				        alert.setAlert_at(LocalDateTime.now());
+				        alert.setAlert_status("ENVIADA");
+				        alert.setAlert_type("ROJA");
+				        alert.setSensor(s);
+				        alertRepo.save(alert);
+				    } else if (readingValue > rangoNormalSuperior) {
+				    	read.setStatus("MEDIA");
+				        Alert alert = new Alert();
+				        alert.setAlert_at(LocalDateTime.now());
+				        alert.setAlert_status("ENVIADA");
+				        alert.setAlert_type("MEDIA");
+				        alert.setSensor(s);
+				        alertRepo.save(alert);
+				    } else {
+				        read.setStatus("NORMAL");
+				    }
+				     
 				}
-				
-			}
+		}
+			//}
 	
 				
-				}
+			//	}
+		
+	    System.out.println(read.getStatus());
+
 			}
-		}
+	
+		
 	
 
 	@Transactional
@@ -137,5 +138,7 @@ public class AlertService implements IAlertService{
 	}
 	
 	}
+
+
 
 
