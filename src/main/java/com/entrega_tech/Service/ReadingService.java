@@ -146,9 +146,9 @@ public class ReadingService implements IReadingService {
 		Random random = new Random();
 		double readingValue = 0.0;
 
-			    readingValue = normalValue + random.nextDouble() * (criticalValue + 15 - normalValue);
-
-
+		readingValue = normalValue + random.nextDouble() * (criticalValue - normalValue);
+		readingValue = Math.round(readingValue * 100.0) / 100.0; 
 		return readingValue;
+	
 	}
 }
