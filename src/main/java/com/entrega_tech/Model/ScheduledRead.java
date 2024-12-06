@@ -13,9 +13,9 @@ public class ScheduledRead {
 	@Autowired
     private IAlertService alertService;
 
-    @Scheduled(fixedRate = 3000) // Cada 30 segundos
+    /*@Scheduled(fixedRate = 10000)
     public void scheduleReadingUpdates() {
-        alertService.crearAlerta(); // Llama al servicio para actualizar lecturas
-    }
+        alertService.crearAlerta(); 
+    }*/
     
 }

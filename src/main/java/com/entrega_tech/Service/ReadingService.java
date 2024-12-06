@@ -16,6 +16,7 @@ import com.entrega_tech.Model.Plant;
 import com.entrega_tech.Model.Reading;
 import com.entrega_tech.Model.Sensor;
 import com.entrega_tech.Model.SensorPlant;
+import com.entrega_tech.Repository.IAlertRepository;
 import com.entrega_tech.Repository.IReadingRepository;
 import com.entrega_tech.Repository.ISensorPlantRepository;
 import com.entrega_tech.Repository.ISensorRepository;
@@ -34,6 +35,9 @@ public class ReadingService implements IReadingService {
 
 	@Autowired
 	ISensorPlantRepository sensorPlantRepository;
+
+	@Autowired
+	IAlertService alertService;
 
 	@Override
 	@Transactional(readOnly = true)
@@ -91,6 +95,7 @@ public class ReadingService implements IReadingService {
 
 		reading.setTimestamp(LocalDateTime.now());
 
+		System.out.println(LocalDateTime.now());
 		reading.setSensor(sensorPlant);
 
 		readRepo.save(reading);
@@ -138,24 +143,19 @@ public class ReadingService implements IReadingService {
 		reading.setReading_value(readingValue);
 		reading.setSensor(randomSensor);
 		reading.setTimestamp(LocalDateTime.now());
-		reading.setStatus("NORMAL");
+		reading.setStatus("ACTIVE");
 		readRepo.save(reading);
+		alertService.crearAlerta(reading);
+		
+
 	}
 
 	private double generateRandomReading(double normalValue, double criticalValue) {
 		Random random = new Random();
 		double readingValue = 0.0;
 
-		if (random.nextDouble() < 0.2) {
-			readingValue = criticalValue + random.nextDouble() * (criticalValue * 0.2);
-		}
-
-		else if (random.nextDouble() < 0.4) {
-			readingValue = normalValue * 0.5 + random.nextDouble() * (normalValue * 0.4);
-		} else {
-			readingValue = random.nextDouble() * normalValue;
-		}
-
+		readingValue = normalValue + random.nextDouble() * (criticalValue - normalValue);
+		readingValue = Math.round(readingValue * 100.0) / 100.0; 
 		return readingValue;
 	}
 }
